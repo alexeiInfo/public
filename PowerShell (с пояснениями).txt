@@ -1,0 +1,28 @@
+# ПРоверка SSH соединения (До этого сделали ssh ключ и приявзалиего в github)
+ssh -T git@github.com
+# получили сообщение Hi alexeiInfo! You've successfully authenticated, but GitHub does not provide shell access. Указываем URL Git-репозитория: 
+$repoUrl = "git@github.com:alexeiInfo/public.git"
+# Клонирование репозитория
+git clone $repoUrl
+# Переход в директорию проекта
+cd public
+# Проверка текущего тега
+git describe --tags
+# Получилось 1.0.0-3-ga4c34b9 -поверх тега есть коммит,значит надо увеличивать патч версию. Создаем новый коммит-
+git commit -m "Incremented patch version"
+# увеличиваем patch версию 
+git tag 1.0.1
+# далее,что бы нам сделать push через ssh, нужно поменять url 
+git remote set-url origin git@github.com:alexeiInfo/public.git
+# теперь делаем push по ssh и в репозитории получаем два тега 1.0.0 (прошлый) и 1.0.1 теперешний.
+git push origin main --tags
+# прверяем наличие новых коммитов последнего тега
+$checkCommits = git log $(git describe --abbrev=0 --tags)..HEAD --oneline
+
+if (-not $checkCommits) {
+    Write-Host "No changes"
+} else {
+    Write-Host "There are new commits."
+}
+# Удаляем локальную копию репозитория (директорию)
+Remove-Item -Path "C:\Windows\system32\public" -Recurse -Force
